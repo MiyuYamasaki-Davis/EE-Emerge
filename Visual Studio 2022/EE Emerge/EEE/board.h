@@ -41,7 +41,7 @@ namespace EEE {
 			int countdown = 0;
 			int gridPos;
 			bool started = false;
-			int minChild, minParent, prevChild;
+			int minChild, prevChild, minParent;
 			System::Windows::Forms::Button^ reset;
 			System::Windows::Forms::Label^ title;
 			System::Windows::Forms::PictureBox^ boardOutline;
@@ -54,9 +54,9 @@ namespace EEE {
 			System::Windows::Forms::TextBox^ timerTitle;
 			System::Windows::Forms::TextBox^ timerBox;
 			System::ComponentModel::IContainer^ components;
-			System::Drawing::Image^ picPlayer = Image::FromFile("EEicon.jpg");
+			System::Drawing::Font^ f = gcnew System::Drawing::Font("Arial", 30);
+			System::Drawing::Image^ picPlayer = Image::FromFile("EEicon.png");
 			System::Drawing::Image^ picGoal = Image::FromFile("TIicon.jpg");
-			Pen^ blackPen = gcnew Pen(Color::Black);
 			Brush^ blackBrush = gcnew Drawing::SolidBrush(Color::Black);
 			Brush^ whiteBrush = gcnew Drawing::SolidBrush(Color::White);
 			Brush^ redBrush = gcnew Drawing::SolidBrush(Color::Red);
@@ -103,7 +103,7 @@ namespace EEE {
 			// 
 			this->title->AutoSize = true;
 			this->title->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 16));
-			this->title->Location = System::Drawing::Point(310, 13);
+			this->title->Location = System::Drawing::Point(346, 13);
 			this->title->Name = L"title";
 			this->title->Size = System::Drawing::Size(251, 26);
 			this->title->TabIndex = 1;
@@ -190,7 +190,7 @@ namespace EEE {
 			this->Controls->Add(this->title);
 			this->Controls->Add(this->reset);
 			this->Name = L"Board";
-			this->Text = L"Memory Game";
+			this->Text = L"Maze Game";
 			this->Load += gcnew System::EventHandler(this, &Board::Board_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->boardOutline))->EndInit();
 			this->ResumeLayout(false);
@@ -227,7 +227,7 @@ namespace EEE {
 		{ 
 			//Resets countdown and start variable and timer if fresh game
 			if (score == 0 && !started) {
-				countdown = 300;
+				countdown = 330;
 				started = true;
 			}
 			timer1->Enabled = true;
@@ -370,7 +370,7 @@ namespace EEE {
 			g->DrawImage(picGoal, goalXPos, goalYPos, 50, 50);
 		}
 
-		private: System::Void minKeyEx(int* minChild, array<int>^ key, array<bool>^ mstSet)
+		private: int minKeyEx(int minChild, array<int>^ key, array<bool>^ mstSet)
 			//Determine the node with the lowest weight among the MST
 			//Inputs: minChild (int*), key (int[]), mstSet (bool[])
 			//Outputs: minChild (int*), key (int[]), mstSet (bool[])
@@ -382,7 +382,9 @@ namespace EEE {
 			//Check if node is in MST and if it has a smaller value
 			for (int i = 0; i < vertices; i++)
 				if (key[i] != 0 && key[i] < min && mstSet[i] == false)
-					min = key[i], *minChild = i;
+					min = key[i], minChild = i;
+
+			return minChild;
 		}
 
 		private: System::Void primMST(array<int, 2>^ graph)
@@ -428,7 +430,7 @@ namespace EEE {
 						prevChild = minChild;
 
 						//Run minimum weight function
-						this->minKeyEx(&minChild, key, mstSet);
+						minChild = this->minKeyEx(minChild, key, mstSet);
 
 						if (minChild != prevChild) //If function found a child node on first run, or found a lower weight neighbor
 						{
@@ -470,6 +472,26 @@ namespace EEE {
 			//Reduce countdown timer
 			countdown--;
 			timerBox->Text = "" + (countdown / 10);
+
+			//Countdown to start
+			if (countdown == 330)
+			{
+
+				g->DrawString("3", f, blackBrush, 235, 235);
+				g->Clear(Color::White);
+			}
+			else if (countdown == 320)
+			{
+
+				g->DrawString("2", f, blackBrush, 235, 235);
+				g->Clear(Color::White);
+			}
+			else if (countdown == 310)
+			{
+
+				g->DrawString("1", f, blackBrush, 235, 235);
+				g->Clear(Color::White);
+			}
 
 			//As long as game is running still
 			if (countdown != 0) 
@@ -553,7 +575,7 @@ namespace EEE {
 			else {
 				g->Clear(Color::White);
 				System::Drawing::Font^ f = gcnew System::Drawing::Font("Arial", 24);
-				g->DrawString("Game Over", f, blackBrush, 200, 200);
+				g->DrawString("Game Over", f, blackBrush, 190, 190);
 				timer1->Enabled = false;
 				started = false;
 			}
@@ -564,6 +586,7 @@ namespace EEE {
 				g->Clear(Color::White);
 				score++;
 				this->scoreBox->Text = "" + score;
+				countdown += 100;
 
 				//Randomizes maze again
 				start_Click(sender, e);
